@@ -1,52 +1,77 @@
-# Wireguard-VPN-Killswitch
+![banner](assets/banner.png)
 
-MacOS Wireguard VPN Killswitch Script
+# MacOS WireGuard VPN Killswitch
 
-This Bash script is designed to act as a VPN killswitch by maintaining strict control over network traffic when using the WireGuard VPN on a macOS system. It leverages the macOS firewall utility, pfctl, to ensure that only traffic routed through the specified WireGuard VPN interface is allowed, blocking all other traffic when the VPN connection is inactive.
+Two Bash scripts for macOS that use the pf firewall (`pfctl`) as a
+killswitch for a WireGuard VPN connection:
 
-Script Overview:
+- `killswitch.sh` loads a pf ruleset that blocks all traffic except
+  traffic leaving through the WireGuard interface, enables pf, and
+  then monitors the interface every 5 seconds.
+- `unkillswitch.sh` disables pf again to restore normal access.
 
-VPN Interface Configuration: The script starts by defining the name of the WireGuard VPN interface, which you should customize to match your specific setup.
-Enabling Firewall Rules: It enables the macOS firewall rules using sudo pfctl -E.
-Temporary Default Block: A temporary pf configuration is created to block all network traffic by default. This step ensures that, without an active VPN connection, all outgoing traffic is prevented.
-Allowing VPN Traffic: Traffic through the specified VPN interface is explicitly allowed to pass through the firewall.
-Status Display: A message is displayed indicating that the VPN Killswitch is active, and only traffic through the designated VPN interface is permitted.
-VPN Connection Monitoring: The script enters a loop that continuously monitors the status of the VPN connection. If the VPN interface exists (indicating an active VPN connection), the script waits for 5 seconds. If the VPN interface does not exist (indicating a disconnected VPN), it enforces the killswitch by blocking all traffic and waits for 5 seconds.
+## How killswitch.sh works
 
-Step 1: Prerequisites
+1. The ruleset is loaded in a single `pfctl -f` call containing exactly
+   two rules: `block all` and `pass out on <interface> all`. A single
+   load matters because every `pfctl -f` load replaces the whole
+   ruleset; loading the two rules separately would silently drop the
+   first one.
+2. pf is enabled with `pfctl -E` only after the ruleset is loaded.
+3. Every 5 seconds the script checks whether the VPN interface exists
+   (`ifconfig`). When the interface disappears, the ruleset is
+   replaced with `block all` alone. When the interface comes back, the
+   two-rule killswitch ruleset is loaded again.
+4. If any `pfctl` call fails, the script prints an error and exits
+   with a non-zero status instead of claiming the killswitch is
+   active. The interface name is validated before use, and an invalid
+   name exits with status 2.
 
-Before you begin, ensure you have the following:
+## Requirements
 
-A macOS system.
-WireGuard installed and configured with a VPN profile.
-Administrative privileges (sudo access).
-Basic familiarity with using the Terminal in macOS.
+- macOS with pf (built in)
+- WireGuard installed and configured, with the VPN interface up
+- Administrative privileges (the scripts call `sudo pfctl`)
 
-Step 2: Download the Script
+## Usage
 
-You can download the script from GitHub or copy its contents and create a new file on your system using a text editor (e.g., vpn-killswitch.sh).
+Set the interface name to your WireGuard interface (default `utun3`)
+either by editing the `VPN_INTERFACE` line at the top of
+`killswitch.sh`, or through the environment:
 
-Step 3: Customize the Script
+```bash
+chmod +x killswitch.sh unkillswitch.sh
+VPN_INTERFACE=utun4 sudo -E ./killswitch.sh
+```
 
-Open the script in a text editor and make the following customizations:
+Or, with the default or edited interface name:
 
-Set the VPN_INTERFACE variable to match the name of your WireGuard VPN interface (e.g., "utun0").
+```bash
+sudo ./killswitch.sh
+```
 
-Step 4: Make the Script Executable
+To stop blocking traffic:
 
-Open Terminal and navigate to the directory where you saved the script. Use the chmod command to make the script executable:
+```bash
+sudo ./unkillswitch.sh
+```
 
-bash
-Copy code
-chmod +x vpn-killswitch.sh
+## Limitations
 
-Step 5: Run the Script
+- Stopping `killswitch.sh` (for example with Ctrl-C) does not undo
+  anything: pf stays enabled with the last ruleset that was loaded.
+  Run `unkillswitch.sh` (or `sudo pfctl -d`) to restore normal access.
+- `unkillswitch.sh` disables pf entirely (`pfctl -d`), not just the
+  killswitch rules. If you rely on pf for other rules, reload your own
+  ruleset afterwards instead.
+- The ruleset passes traffic only on the VPN interface. It contains no
+  exception for WireGuard endpoint handshake traffic on the physical
+  interface, and connection detection is based only on whether the
+  interface exists, not on whether the tunnel is actually passing
+  traffic.
+- There is no logging, alerting, or automatic restart. The monitor is
+  a simple 5 second poll loop.
 
-Execute the script with administrative privileges using sudo:
+## License
 
-bash
-Copy code
-sudo ./vpn-killswitch.sh
-You will be prompted to enter your macOS user password.
-
-Current Limitations: You must use the unkillswitch.sh or sudo pfctl -d to stop blocking all traffic. Be my guest if someone can figure out a way to implement both.
+GPL-3.0, see the LICENSE file.
