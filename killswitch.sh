@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# Arguments are answered before anything touches pf. The first
+# version had no argument handling at all, so running it with
+# --help started loading rulesets: help became a state change.
+# Unknown arguments exit 2 like the invalid interface name below,
+# so a wrapping script can tell bad input from a pfctl failure.
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+    echo "Usage: [VPN_INTERFACE=utun4] sudo -E ./killswitch.sh"
+    echo "Loads a pf ruleset that only allows traffic out via the VPN interface,"
+    echo "then watches the interface and drops the pass rule while it is down."
+    echo "Run unkillswitch.sh to disable pf again. Takes no arguments."
+    exit 0
+fi
+if [ $# -gt 0 ]; then
+    echo "Error: this script takes no arguments (got: $1)" >&2
+    exit 2
+fi
+
 # Define the name of your WireGuard VPN interface.
 # Override without editing the file, for example:
 #   VPN_INTERFACE=utun4 sudo -E ./killswitch.sh

@@ -75,3 +75,17 @@ sudo ./unkillswitch.sh
 ## License
 
 GPL-3.0, see the LICENSE file.
+
+## Help and arguments
+
+Both scripts take no arguments. `--help` on either one prints its
+usage and exits 0 without touching pf; before this pass, passing
+`--help` to killswitch.sh started loading rulesets. An unknown
+argument exits 2, the same code as an invalid interface name, so bad
+input reads differently from a pfctl failure (exit 1) to anything
+wrapping these scripts.
+
+Tests: `python3 -m unittest` runs the portable paths (syntax, help,
+argument and interface validation). The pf ruleset loading itself is
+macOS only and was not run in this pass; no Mac was available, and I
+am not claiming a run I did not do.
