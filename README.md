@@ -1,6 +1,14 @@
-![banner](assets/banner.png)
+![Introduction banner](intro-banner.png)
 
 # MacOS WireGuard VPN Killswitch
+
+![Banner](banner.png)
+
+<img src="assets-scene.svg" alt="Animated themed scene" width="100%">
+
+> ROUTE WARNING: Stopping `killswitch.sh` (for example with Ctrl-C) does not undo anything: pf stays enabled with the last ruleset that was loaded. Run `unkillswitch.sh` (or `sudo pfctl -d`) to restore normal access.
+
+> RESTORE NOTE: `unkillswitch.sh` disables pf entirely (`pfctl -d`), not just the killswitch rules. If you rely on pf for other rules, reload your own ruleset afterwards instead.
 
 Two Bash scripts for macOS that use the pf firewall (`pfctl`) as a
 killswitch for a WireGuard VPN connection:
@@ -27,11 +35,15 @@ killswitch for a WireGuard VPN connection:
    active. The interface name is validated before use, and an invalid
    name exits with status 2.
 
+<img src="sep-heavy.svg" alt="" width="100%">
+
 ## Requirements
 
 - macOS with pf (built in)
 - WireGuard installed and configured, with the VPN interface up
 - Administrative privileges (the scripts call `sudo pfctl`)
+
+<img src="sep-heavy.svg" alt="" width="100%">
 
 ## Usage
 
@@ -56,6 +68,8 @@ To stop blocking traffic:
 sudo ./unkillswitch.sh
 ```
 
+<img src="sep-heavy.svg" alt="" width="100%">
+
 ## Limitations
 
 - Stopping `killswitch.sh` (for example with Ctrl-C) does not undo
@@ -72,9 +86,15 @@ sudo ./unkillswitch.sh
 - There is no logging, alerting, or automatic restart. The monitor is
   a simple 5 second poll loop.
 
+![banner](assets/banner.png)
+
+<img src="sep-heavy.svg" alt="" width="100%">
+
 ## License
 
 GPL-3.0, see the LICENSE file.
+
+<img src="sep-open.svg" alt="" width="100%">
 
 ## Help and arguments
 
