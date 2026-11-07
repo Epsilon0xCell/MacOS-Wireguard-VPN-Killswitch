@@ -1,12 +1,14 @@
-![Introduction banner](intro-banner.png)
+![Introduction banner: gloved hands throwing the great red handled knife switch in a storm grey switchyard, sparks flying as the yard lines wake around the one protected line](intro-banner.png)
 
 # MacOS WireGuard VPN Killswitch
 
-![Banner](banner.png)
+<p align="center"><img src="logo.png" alt="MacOS-Wireguard-VPN-Killswitch logo: a large steel knife switch with a hazard red handle resting over the top of a brown porcelain insulator, two more insulators standing empty behind it under a storm grey sky" width="200"></p>
+
+![Banner: a storm grey switchyard of steel gantries and porcelain insulator stacks, every line dark except one central line carrying a faint amber glow, hazard red tags hanging on the dead lines](banner.png)
 
 <img src="assets-scene.svg" alt="Animated themed scene" width="100%">
 
-> ROUTE WARNING: Stopping `killswitch.sh` (for example with Ctrl-C) does not undo anything: pf stays enabled with the last ruleset that was loaded. Run `unkillswitch.sh` (or `sudo pfctl -d`) to restore normal access.
+> YARD WARNING: Stopping `killswitch.sh` (for example with Ctrl-C) does not undo anything: pf stays enabled with the last ruleset that was loaded. Run `unkillswitch.sh` (or `sudo pfctl -d`) to restore normal access.
 
 > RESTORE NOTE: `unkillswitch.sh` disables pf entirely (`pfctl -d`), not just the killswitch rules. If you rely on pf for other rules, reload your own ruleset afterwards instead.
 
@@ -86,7 +88,7 @@ sudo ./unkillswitch.sh
 - There is no logging, alerting, or automatic restart. The monitor is
   a simple 5 second poll loop.
 
-![banner](assets/banner.png)
+![Banner (assets copy): a storm grey switchyard of steel gantries and porcelain insulator stacks, every line dark except one central line carrying a faint amber glow, hazard red tags hanging on the dead lines](assets/banner.png)
 
 <img src="sep-heavy.svg" alt="" width="100%">
 
