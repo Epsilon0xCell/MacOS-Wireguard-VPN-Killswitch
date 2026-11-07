@@ -1,70 +1,73 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MacOS-Wireguard-VPN-Killswitch: the route ledger</title>
+<title>MacOS-Wireguard-VPN-Killswitch: the switchyard</title>
 <meta name="description" content="Two Bash scripts for macOS that keep network traffic on the WireGuard path or stop it outright.">
 <style>
-@font-face { font-family: Cabin; src: url(fonts/Cabin-Regular.ttf); }
-:root { --lime:#efeee8; --creek:#2e5a7c; --wood:#4a3823; --gold:#c99a3a; --tan:#ba9460; --ink:#2c2620; }
-* { box-sizing: border-box; } body { margin: 0; font-family: Cabin, sans-serif; background: var(--lime); color: var(--ink); line-height: 1.65; }
-header { padding: 2rem 5vw 0.5rem; max-width: 920px; margin: 0 auto; }
-header img.banner { width: 100%; height: auto; } header img.logo { width: 82px; height: 82px; }
-.plank { background: var(--wood); color: #f4f2ec; padding: 0.7rem 1.2rem; letter-spacing: 0.12em; text-transform: uppercase; position: relative; }
-.plank::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 33%; border-right: 3px solid rgba(0,0,0,0.35); background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(0,0,0,0.12) 6px 7px); }
-.plank span { position: relative; }
-main { max-width: 920px; margin: 0 auto; padding: 0 5vw 3rem; position: relative; }
-.route { position: relative; padding-left: 44px; }
-.route::before { content: ""; position: absolute; left: 15px; top: 6px; bottom: 6px; width: 4px; background: var(--creek); }
-.stop { position: relative; margin: 2.2rem 0; }
-.stop .dot { position: absolute; left: -40px; top: 12px; width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--creek); background: var(--lime); }
-.stop.seen .dot { background: var(--gold); }
-.bundle { background: #e4d3ac; border: 1px solid #a8854f; padding: 1.1rem 1.4rem; margin: 1rem 0; background-image: linear-gradient(90deg, transparent 32%, rgba(120,90,50,0.4) 32%, rgba(120,90,50,0.4) 33.5%, transparent 33.5%, transparent 65%, rgba(120,90,50,0.4) 65%, rgba(120,90,50,0.4) 66.5%, transparent 66.5%); }
-pre.code { background: #17334a; color: #efeee8; border-left: 6px solid var(--tan); padding: 1rem; overflow-x: auto; font-size: 0.86rem; }
-.gate-btn { display: inline-block; background: var(--wood); color: #f4f2ec; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.6rem 1.2rem; text-decoration: none; position: relative; margin: 0.25rem; transition: transform 0.12s; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.3); }
-.gate-btn::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 33%; border-right: 2px solid rgba(0,0,0,0.4); }
-.gate-btn:hover { transform: translateY(-3px); box-shadow: inset 0 -4px 0 var(--gold); }
-.gate-btn:active { transform: translateY(0); box-shadow: inset 0 -12px 0 rgba(201,154,58,0.5); }
-.gate-btn.chained { opacity: 0.55; pointer-events: none; }
-.gate-btn.chained::after { content: ""; position: absolute; left: 6%; right: 6%; top: 46%; border-top: 5px solid #6a6a6e; }
-a { color: var(--creek); text-decoration: none; } a:hover { color: #17334a; }
-a .shoe { color: #8d8a80; font-weight: 700; } a:hover .shoe { color: var(--creek); } a:visited { color: var(--tan); }
-.fence { border: 0; border-top: 4px solid var(--wood); height: 14px; background: linear-gradient(var(--wood), var(--wood)) 12% 0 / 5px 14px no-repeat, linear-gradient(var(--wood), var(--wood)) 88% 0 / 5px 14px no-repeat; border-bottom: 4px solid var(--wood); margin: 2.4rem 0; }
-.ledger-note { background: #f6f5ef; border: 1px solid var(--tan); border-left: 8px solid var(--tan); padding: 0.9rem 1.2rem; background-image: repeating-linear-gradient(0deg, transparent 0 26px, rgba(46,90,124,0.14) 26px 27px); }
-.shots { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); } .shots img { width: 100%; height: auto; }
-footer { max-width: 920px; margin: 0 auto; padding: 0 5vw 2.4rem; }
+@font-face{font-family:'Stardos Stencil';src:url('fonts/StardosStencil-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:'Stardos Stencil';src:url('fonts/StardosStencil-Bold.ttf') format('truetype');font-weight:700}
+@font-face{font-family:'Fira Sans';src:url('fonts/FiraSans-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:'Fira Sans';src:url('fonts/FiraSans-Bold.ttf') format('truetype');font-weight:700}
+:root{--lime:#e8e9e6;--creek:#5b83a6;--wood:#3a4048;--gold:#c22e22;--tan:#8a8f96;--ink:#23272c}
+*{box-sizing:border-box}body{margin:0;font-family:'Fira Sans',sans-serif;background:var(--lime);color:var(--ink);line-height:1.65}
+header{padding:2rem 5vw 0.5rem;max-width:920px;margin:0 auto}
+header img.banner{width:100%;height:auto}header img.logo{width:82px;height:82px}
+.plank{background:var(--wood);color:#f4f2ec;padding:0.7rem 1.2rem;font-family:'Stardos Stencil',sans-serif;letter-spacing:0.12em;text-transform:uppercase;position:relative}
+.plank::before{content:"";position:absolute;left:0;top:0;bottom:0;width:33%;border-right:3px solid rgba(0,0,0,0.35);background:repeating-linear-gradient(0deg,transparent 0 6px,rgba(0,0,0,0.12) 6px 7px)}
+.plank span{position:relative}
+main{max-width:920px;margin:0 auto;padding:0 5vw 3rem;position:relative}
+.route{position:relative;padding-left:44px}
+.route::before{content:"";position:absolute;left:15px;top:6px;bottom:6px;width:4px;background:var(--creek)}
+.stop{position:relative;margin:2.2rem 0}
+.stop .dot{position:absolute;left:-40px;top:12px;width:18px;height:18px;border-radius:50%;border:3px solid var(--creek);background:var(--lime)}
+.stop.seen .dot{background:var(--gold)}
+.bundle{background:#dfe1dc;border:1px solid #7d838a;padding:1.1rem 1.4rem;margin:1rem 0;background-image:linear-gradient(90deg,transparent 32%,rgba(90,95,100,0.4) 32%,rgba(90,95,100,0.4) 33.5%,transparent 33.5%,transparent 65%,rgba(90,95,100,0.4) 65%,rgba(90,95,100,0.4) 66.5%,transparent 66.5%)}
+pre.code{background:#23272c;color:#efeee8;border-left:6px solid var(--gold);padding:1rem;overflow-x:auto;font-size:0.86rem}
+.gate-btn{display:inline-block;background:var(--wood);color:#f4f2ec;text-transform:uppercase;letter-spacing:0.1em;padding:0.6rem 1.2rem;text-decoration:none;position:relative;margin:0.25rem;transition:transform 0.12s;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.3)}
+.gate-btn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:33%;border-right:2px solid rgba(0,0,0,0.4)}
+.gate-btn:hover{transform:translateY(-3px);box-shadow:inset 0 -4px 0 var(--gold)}
+.gate-btn:active{transform:translateY(0);box-shadow:inset 0 -12px 0 rgba(194,46,34,0.5)}
+.gate-btn.chained{opacity:0.55;pointer-events:none}
+.gate-btn.chained::after{content:"";position:absolute;left:6%;right:6%;top:46%;border-top:5px solid #6a6a6e}
+a{color:#3d607f;text-decoration:none}a:hover{color:#23272c}
+a .shoe{color:#8d8a80;font-weight:700}a:hover .shoe{color:var(--creek)}a:visited{color:var(--tan)}
+.fence{border:0;border-top:4px solid var(--wood);height:14px;background:linear-gradient(var(--wood),var(--wood)) 12% 0 / 5px 14px no-repeat,linear-gradient(var(--wood),var(--wood)) 88% 0 / 5px 14px no-repeat;border-bottom:4px solid var(--wood);margin:2.4rem 0}
+.ledger-note{background:#f6f5ef;border:1px solid var(--tan);border-left:8px solid var(--gold);padding:0.9rem 1.2rem;background-image:repeating-linear-gradient(0deg,transparent 0 26px,rgba(91,131,166,0.14) 26px 27px)}
+.shots{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.shots img{width:100%;height:auto}
+footer{max-width:920px;margin:0 auto;padding:0 5vw 2.4rem}
 </style></head><body>
-<header><img class="logo" src="assets/logo.png" alt="MacOS-Wireguard-VPN-Killswitch logo"><img class="banner" src="assets/banner.png" alt="">
+<header><img class="logo" src="assets/logo.png" alt="MacOS-Wireguard-VPN-Killswitch logo"><img class="banner" src="assets/banner.png" alt="A storm grey switchyard of steel gantries and porcelain insulator stacks, every line dark except one central line carrying a faint amber glow, hazard red tags hanging on the dead lines">
 <div class="plank"><span>MacOS-Wireguard-VPN-Killswitch</span></div>
 <p>Two Bash scripts for macOS that keep network traffic on the WireGuard path or stop it outright.</p>
-<nav aria-label="route stops"><a class="gate-btn" href="#load">The Load</a><a class="gate-btn" href="#gate">The Gate Closes</a><a class="gate-btn" href="#watch">Standing Watch</a><a class="gate-btn" href="#falls">If the Horse Falls</a><a class="gate-btn" href="#open">Opening the Gate</a><a class="gate-btn chained" href="#gate" aria-disabled="true">Killswitch (needs WireGuard)</a></nav></header>
+<nav aria-label="switch throws"><a class="gate-btn" href="#load">The Load</a><a class="gate-btn" href="#gate">The Switch Closes</a><a class="gate-btn" href="#watch">Standing Watch</a><a class="gate-btn" href="#falls">If the Line Drops</a><a class="gate-btn" href="#open">Opening the Switch</a><a class="gate-btn chained" href="#gate" aria-disabled="true">Killswitch (needs WireGuard)</a></nav></header>
 <main><div class="route">
-<section class="stop" id="load"><span class="dot"></span><div class="plank"><span>First Stop: The Load</span></div>
+<section class="stop" id="load"><span class="dot"></span><div class="plank"><span>First Throw: The Load</span></div>
 <div class="bundle"><p>Two Bash scripts for macOS that use the pf firewall (<code>pfctl</code>) as a killswitch for a WireGuard VPN connection. <code>killswitch.sh</code> loads a pf ruleset that blocks all traffic except traffic leaving through the WireGuard interface, enables pf, and then monitors the interface every 5 seconds. <code>unkillswitch.sh</code> disables pf again to restore normal access.</p>
 <p>Requirements: macOS with pf (built in); WireGuard installed and configured, with the VPN interface up; administrative privileges (the scripts call <code>sudo pfctl</code>).</p></div></section>
 <hr class="fence">
-<section class="stop" id="gate"><span class="dot"></span><div class="plank"><span>Second Stop: The Gate Closes</span></div>
+<section class="stop" id="gate"><span class="dot"></span><div class="plank"><span>Second Throw: The Switch Closes</span></div>
 <p>The ruleset is loaded in a single <code>pfctl -f</code> call containing exactly two rules: <code>block all</code> and <code>pass out on &lt;interface&gt; all</code>. A single load matters because every <code>pfctl -f</code> load replaces the whole ruleset; loading the two rules separately would silently drop the first one. pf is enabled with <code>pfctl -E</code> only after the ruleset is loaded. While the killswitch is on, nothing travels by any other interface.</p>
 <p>Set the interface name to your WireGuard interface (default <code>utun3</code>) either by editing the <code>VPN_INTERFACE</code> line at the top of <code>killswitch.sh</code>, or through the environment:</p>
 <pre class="code"><code>chmod +x killswitch.sh unkillswitch.sh
 VPN_INTERFACE=utun4 sudo -E ./killswitch.sh</code></pre>
 <p>Or, with the default or edited interface name:</p>
 <pre class="code"><code>sudo ./killswitch.sh</code></pre>
-<div class="ledger-note"><strong>ROUTE WARNING.</strong> If any <code>pfctl</code> call fails, the script prints an error and exits with a non-zero status instead of claiming the killswitch is active. The interface name is validated before use, and an invalid name exits with status 2.</div></section>
+<div class="ledger-note"><strong>YARD WARNING.</strong> If any <code>pfctl</code> call fails, the script prints an error and exits with a non-zero status instead of claiming the killswitch is active. The interface name is validated before use, and an invalid name exits with status 2.</div></section>
 <hr class="fence">
-<section class="stop" id="watch"><span class="dot"></span><div class="plank"><span>Third Stop: Standing Watch at the Ford</span></div>
-<p>The watch is kept at intervals, the way a rider pauses at a creek and checks the stones before stepping: every 5 seconds the script checks whether the VPN interface exists (<code>ifconfig</code>). When the interface comes back, the two-rule killswitch ruleset is loaded again. There is no logging, alerting, or automatic restart; the monitor is a simple 5 second poll loop, and connection detection is based only on whether the interface exists, not on whether the tunnel is actually passing traffic.</p></section>
+<section class="stop" id="watch"><span class="dot"></span><div class="plank"><span>Third Throw: Standing Watch</span></div>
+<p>The watch is kept at intervals, the way a linesman walks the yard and checks each insulator stack before trusting a line: every 5 seconds the script checks whether the VPN interface exists (<code>ifconfig</code>). When the interface comes back, the two-rule killswitch ruleset is loaded again. There is no logging, alerting, or automatic restart; the monitor is a simple 5 second poll loop, and connection detection is based only on whether the interface exists, not on whether the tunnel is actually passing traffic.</p></section>
 <hr class="fence">
-<section class="stop" id="falls"><span class="dot"></span><div class="plank"><span>Fourth Stop: If the Horse Falls</span></div>
+<section class="stop" id="falls"><span class="dot"></span><div class="plank"><span>Fourth Throw: If the Line Drops</span></div>
 <p>When the interface drops, traffic is halted rather than rerouted: the ruleset is replaced with <code>block all</code> alone, so nothing leaves by the physical interface or any other path. The ruleset contains no exception for WireGuard endpoint handshake traffic on the physical interface.</p>
-<div class="ledger-note"><strong>ROUTE WARNING.</strong> Stopping <code>killswitch.sh</code> (for example with Ctrl-C) does not undo anything: pf stays enabled with the last ruleset that was loaded. Run <code>unkillswitch.sh</code> (or <code>sudo pfctl -d</code>) to restore normal access.</div></section>
+<div class="ledger-note"><strong>YARD WARNING.</strong> Stopping <code>killswitch.sh</code> (for example with Ctrl-C) does not undo anything: pf stays enabled with the last ruleset that was loaded. Run <code>unkillswitch.sh</code> (or <code>sudo pfctl -d</code>) to restore normal access.</div></section>
 <hr class="fence">
-<section class="stop" id="open"><span class="dot"></span><div class="plank"><span>Fifth Stop: Opening the Gate Again</span></div>
-<p>Disabling is given the same size and prominence as enabling, because a route is only finished when you can ride it back:</p>
+<section class="stop" id="open"><span class="dot"></span><div class="plank"><span>Fifth Throw: Opening the Switch Again</span></div>
+<p>Disabling is given the same size and prominence as enabling, because a yard is only safe when every switch can be thrown back:</p>
 <pre class="code"><code>sudo ./unkillswitch.sh</code></pre>
 <div class="ledger-note"><strong>RESTORE NOTE.</strong> <code>unkillswitch.sh</code> disables pf entirely (<code>pfctl -d</code>), not just the killswitch rules. If you rely on pf for other rules, reload your own ruleset afterwards instead.</div>
-<p>Both scripts take no arguments. <code>--help</code> on either one prints its usage and exits 0 without touching pf. An unknown argument exits 2, the same code as an invalid interface name, so bad input reads differently from a pfctl failure (exit 1). Tests: <code>python3 -m unittest</code> runs the portable paths (syntax, help, argument and interface validation); the pf ruleset loading itself is macOS only. The full sheet set is the <a href="https://github.com/Epsilon0xCell/MacOS-Wireguard-VPN-Killswitch/tree/main/MacOS-Wireguard-VPN-Killswitch-Visuals"><span class="shoe">U</span> MacOS-Wireguard-VPN-Killswitch-Visuals</a> folder.</p>
+<p>Both scripts take no arguments. <code>--help</code> on either one prints its usage and exits 0 without touching pf. An unknown argument exits 2, the same code as an invalid interface name, so bad input reads differently from a pfctl failure (exit 1). Tests: <code>python3 -m unittest</code> runs the portable paths (syntax, help, argument and interface validation); the pf ruleset loading itself is macOS only. The full still set is the <a href="https://github.com/Epsilon0xCell/MacOS-Wireguard-VPN-Killswitch/tree/main/MacOS-Wireguard-VPN-Killswitch-Visuals"><span class="shoe">U</span> MacOS-Wireguard-VPN-Killswitch-Visuals</a> folder.</p>
 <div class="shots"><img src="assets/architecture.png" alt="Hand drawn architecture sheet for MacOS Wireguard VPN Killswitch"><img src="assets/flowchart.png" alt="Hand drawn flowchart sheet for MacOS Wireguard VPN Killswitch"><img src="assets/product-map.png" alt="Hand drawn product map sheet for MacOS Wireguard VPN Killswitch"></div></section>
 </div></main>
-<footer><hr class="fence"><p>MacOS-Wireguard-VPN-Killswitch is one of my projects. Licence: GPL-3.0, see the LICENSE file. Source: <a href="https://github.com/Epsilon0xCell/MacOS-Wireguard-VPN-Killswitch">github.com/Epsilon0xCell/MacOS-Wireguard-VPN-Killswitch</a>.</p></footer>
+<footer><hr class="fence"><p>MacOS-Wireguard-VPN-Killswitch is one of my projects. Licence: GPL-3.0, see the LICENSE file. Fonts: Stardos Stencil and Fira Sans, self-hosted (SIL Open Font License 1.1, licenses beside the font files). Source: <a href="https://github.com/Epsilon0xCell/MacOS-Wireguard-VPN-Killswitch">github.com/Epsilon0xCell/MacOS-Wireguard-VPN-Killswitch</a>.</p></footer>
 <script>
 var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) e.target.classList.add('seen'); }); }, {threshold: 0.3});
 document.querySelectorAll('.stop').forEach(function(s){ io.observe(s); });
